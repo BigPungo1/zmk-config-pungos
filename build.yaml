@@ -1,5 +1,80 @@
-include:
-  - board: nice_nano_v2
-    shield: pungo_split_left
-  - board: nice_nano_v2
-    shield: pungo_split_right
+name: ZMK Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install host deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gperf ccache dfu-util wget \
+                                  python3-pip python3-setuptools python3-wheel xz-utils file
+
+      - name: Install west
+        run: pip3 install --user west
+
+      - name: Add user bin to PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # If you already committed config/west.yml, this step just skips.
+      - name: Ensure west manifest exists
+        run: |
+          mkdir -p config
+          if [ ! -f config/west.yml ]; then
+            cat > config/west.yml <<'YAML'
+            manifest:
+              defaults:
+                revision: main
+              remotes:
+                - name: zmkfirmware
+                  url-base: https://github.com/zmkfirmware
+              projects:
+                - name: zmk
+                  remote: zmkfirmware
+                  revision: main
+                  import: app/west.yml
+              self:
+                path: config
+            YAML
+          fi
+
+      - name: Initialize west workspace
+        run: |
+          west init -l config
+          west update
+          west zephyr-export
+
+      - name: Install Zephyr SDK (ARM)
+        run: |
+          ZSDK_VER=0.16.7
+          wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZSDK_VER}/zephyr-sdk-${ZSDK_VER}-linux-x86_64.tar.xz
+          tar -xJf zephyr-sdk-${ZSDK_VER}-linux-x86_64.tar.xz
+          echo "ZEPHYR_SDK_INSTALL_DIR=$GITHUB_WORKSPACE/zephyr-sdk-${ZSDK_VER}" >> $GITHUB_ENV
+          $GITHUB_WORKSPACE/zephyr-sdk-${ZSDK_VER}/setup.sh -t arm-zephyr-eabi
+
+      - name: Build LEFT (central)
+        run: |
+          west build -p always -s zmk/app -b nice_nano_v2 -d build/left -- -DSHIELD=pungo_split_left
+
+      - name: Build RIGHT (peripheral)
+        run: |
+          west build -p always -s zmk/app -b nice_nano_v2 -d build/right -- -DSHIELD=pungo_split_right
+
+      - name: Upload UF2 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zmk-uf2s
+          path: |
+            build/left/zephyr/zmk.uf2
+            build/right/zephyr/zmk.uf2
