@@ -1,0 +1,7 @@
+file_format: "1"
+id: pungo_split
+name: Pungo Split
+type: shield
+requires: [nice_nano_v2]
+features: [keys]
+siblings: [pungo_split_left, pungo_split_right]

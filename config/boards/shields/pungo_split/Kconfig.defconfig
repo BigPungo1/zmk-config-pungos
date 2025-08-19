@@ -1,0 +1,15 @@
+if SHIELD_PUNGO_SPLIT_LEFT
+config ZMK_KEYBOARD_NAME
+    default "PungoSplit"
+config ZMK_SPLIT
+    default y
+config ZMK_SPLIT_ROLE_CENTRAL
+    default y
+endif
+
+if SHIELD_PUNGO_SPLIT_RIGHT
+config ZMK_SPLIT
+    default y
+config ZMK_SPLIT_ROLE_PERIPHERAL
+    default y
+endif

@@ -1,0 +1,57 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <dt-bindings/zmk/matrix_transform.h>
+
+/ {
+    kscan0: kscan0 {
+        compatible = "zmk,kscan-gpio-matrix";
+        diode-direction = "col2row";
+        wakeup-source;
+
+        /* row order: bottom, mod, home, top */
+        row-gpios
+            = <&gpio1 13 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* P113 */
+            , <&gpio1 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* P115 */
+            , <&gpio0  2 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* P002 */
+            , <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* P029 */
+            ;
+    };
+
+    /* Physical-style transform: group by columns per half. */
+    default_transform: keymap_transform0 {
+        compatible = "zmk,matrix-transform";
+        columns = <16>;
+        rows = <4>;
+        map = <
+            /* LEFT HALF (cols 0..7) */
+            RC(0,0) RC(1,0) RC(2,0) RC(3,0)  /* pinky */
+            RC(0,1) RC(1,1) RC(2,1) RC(3,1)  /* outer */
+            RC(0,2) RC(1,2) RC(2,2) RC(3,2)  /* ring */
+            RC(0,3) RC(1,3) RC(2,3) RC(3,3)  /* middle */
+            RC(0,4) RC(1,4) RC(2,4) RC(3,4)  /* index */
+            RC(0,5) RC(1,5) RC(2,5) RC(3,5)  /* inner */
+            RC(0,6) RC(1,6) RC(2,6) RC(3,6)  /* thumb_near */
+            RC(0,7) RC(1,7) RC(2,7) RC(3,7)  /* thumb_home */
+
+            /* RIGHT HALF (cols 8..15) */
+            RC(0,8)  RC(1,8)  RC(2,8)  RC(3,8)   /* pinky */
+            RC(0,9)  RC(1,9)  RC(2,9)  RC(3,9)   /* outer */
+            RC(0,10) RC(1,10) RC(2,10) RC(3,10)  /* ring */
+            RC(0,11) RC(1,11) RC(2,11) RC(3,11)  /* middle */
+            RC(0,12) RC(1,12) RC(2,12) RC(3,12)  /* index */
+            RC(0,13) RC(1,13) RC(2,13) RC(3,13)  /* inner */
+            RC(0,14) RC(1,14) RC(2,14) RC(3,14)  /* thumb_near */
+            RC(0,15) RC(1,15) RC(2,15) RC(3,15)  /* thumb_home */
+        >;
+    };
+
+    physical_layout0: physical_layout_0 {
+        compatible = "zmk,physical-layout";
+        display-name = "Pungo Split (column-ordered)";
+        kscan = <&kscan0>;
+        transform = <&default_transform>;
+    };
+
+    chosen {
+        zmk,physical-layout = &physical_layout0;
+    };
+};

@@ -1,0 +1,16 @@
+#include "pungo_split.dtsi"
+
+&kscan0 {
+    col-gpios
+        = <&gpio0  6 GPIO_ACTIVE_HIGH>
+        , <&gpio0  8 GPIO_ACTIVE_HIGH>
+        , <&gpio0 17 GPIO_ACTIVE_HIGH>
+        , <&gpio0 20 GPIO_ACTIVE_HIGH>
+        , <&gpio0 22 GPIO_ACTIVE_HIGH>
+        , <&gpio0 24 GPIO_ACTIVE_HIGH>
+        , <&gpio0  9 GPIO_ACTIVE_HIGH>
+        , <&gpio0 10 GPIO_ACTIVE_HIGH>
+        ;
+};
+
+&default_transform { col-offset = <8>; };
